@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>RCIP 模拟测试表单</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; background: #f4f7f6; }
+        
+        /* 表单容器默认先隐藏（由 JS 控制显示） */
+        .form-container { 
+            max-width: 600px; 
+            margin: auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            display: none; 
+        }
+        
+        /* 未开放时的提示信息样式 */
+        #unavailable-message {
+            text-align: center;
+            margin-top: 100px;
+            font-size: 24px;
+            color: #555;
+            display: none; /* 默认隐藏，由 JS 控制显示 */
+        }
+
+        .section { display: none; }
+        .section.active { display: block; }
+        .field { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input[type="text"], input[type="file"], select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-group { margin-top: 20px; display: flex; justify-content: space-between; }
+        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; color: #007bff; }
+    </style>
+</head>
+<body>
+
+<div id="unavailable-message">
+    <h2>This website is not available</h2>
+    <p>The form will open automatically when the time arrives.</p>
+</div>
+
+<div class="form-container" id="form-container">
+    <form id="rcipForm">
+        <div class="section active" id="page1">
+            <h2>Section A: Employer Information</h2>
+            <div class="field">
+                <label>Legal Business Name</label>
+                <input type="text" name="legal_name">
+            </div>
+            <div class="field">
+                <label>Primary Business Contact</label>
+                <input type="text" name="contact_name">
+            </div>
+            <div class="field">
+                <label>Email (primary)</label>
+                <input type="text" name="email">
+            </div>
+            <div class="btn-group">
+                <span></span>
+                <button type="button" onclick="go(2)">Next</button>
+            </div>
+        </div>
+
+        <div class="section" id="page2">
+            <h2>Section B: Applicant Information</h2>
+            <div class="field">
+                <label>First name of candidate</label>
+                <input type="text" name="fname">
+            </div>
+            <div class="field">
+                <label>Surname of candidate</label>
+                <input type="text" name="lname">
+            </div>
+            <div class="field">
+                <label>Passport number</label>
+                <input type="text" name="passport">
+            </div>
+            <div class="field">
+                <label>Upload biographical data page of passport</label>
+                <input type="file" name="file_passport">
+            </div>
+            <div class="btn-group">
+                <button type="button" onclick="go(1)">Previous</button>
+                <button type="button" onclick="go(3)">Next</button>
+            </div>
+        </div>
+
+        <div class="section" id="page3">
+            <h2>Section C: Eligibility</h2>
+            <p style="font-size: 0.9em; color: #666;">请上传以下必要文件：</p>
+            <div class="field">
+                <label>Attach IMM 0247 (Job Offer)</label>
+                <input type="file" name="file_imm0247">
+            </div>
+            <div class="field">
+                <label>Attach Language Test Result</label>
+                <input type="file" name="file_language">
+            </div>
+            <div class="field">
+                <label>Attach Educational Credential Assessment (ECA)</label>
+                <input type="file" name="file_eca">
+            </div>
+            <div class="btn-group">
+                <button type="button" onclick="go(2)">Previous</button>
+                <button type="submit">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // --- 定时开放逻辑 ---
+    // 在这里设置你的开放时间！格式为：YYYY-MM-DDTHH:mm:ss (注意中间有个大写的 T)
+    const targetTime = new Date('2026-04-14T06:50:00').getTime(); 
+
+    function checkTime() {
+        const now = new Date().getTime();
+        const formContainer = document.getElementById('form-container');
+        const unavailableMessage = document.getElementById('unavailable-message');
+
+        if (now < targetTime) {
+            // 时间未到：显示提示，隐藏表单
+            unavailableMessage.style.display = 'block';
+            formContainer.style.display = 'none';
+        } else {
+            // 时间已到：隐藏提示，显示表单
+            unavailableMessage.style.display = 'none';
+            formContainer.style.display = 'block';
+            
+            // 既然已经开放，就停止定时器，节省浏览器资源
+            clearInterval(timerInterval);
+        }
+    }
+
+    // 页面加载时立刻检查一次
+    checkTime();
+    // 每 1000 毫秒（1秒）检查一次时间
+    const timerInterval = setInterval(checkTime, 1000);
+
+
+    // --- 原有的表单翻页与提交逻辑 ---
+    function go(pageNumber) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('page' + pageNumber).classList.add('active');
+    }
+    
+    document.getElementById('rcipForm').onsubmit = (e) => {
+        e.preventDefault();
+        alert('表单已提交成功！');
+    };
+</script>
+
+</body>
+</html>
